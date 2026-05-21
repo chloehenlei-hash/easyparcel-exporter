@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coforyou EasyParcel Exporter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Coforyou Operations</p>
+          <h1>EasyParcel Exporter</h1>
+          <p class="subtitle">客服贴上内部 Google Sheet 资料，系统自动整理 EasyParcel 上传表。</p>
+        </div>
+        <div class="defaults">
+          <span>1kg</span>
+          <span>10 x 10 x 10 cm</span>
+          <span>MYR</span>
+        </div>
+      </header>
+
+      <section class="input-panel">
+        <form id="entryForm" class="entry-form">
+          <label>
+            品牌名字
+            <input id="brand" name="brand" autocomplete="organization" required />
+          </label>
+          <label>
+            客人 IG
+            <input id="instagram" name="instagram" placeholder="@customer" />
+          </label>
+          <label>
+            客人名字
+            <input id="customerName" name="customerName" autocomplete="name" required />
+          </label>
+          <label>
+            客人联系电话
+            <input id="phone" name="phone" inputmode="tel" autocomplete="tel" required />
+          </label>
+          <label class="wide">
+            客人地址
+            <textarea id="address" name="address" rows="3" required></textarea>
+          </label>
+          <button type="submit">Add Order</button>
+        </form>
+
+        <div class="bulk-box">
+          <div class="section-title">
+            <div>
+              <h2>Bulk Paste</h2>
+              <p>可以直接从你的 Google Sheet 复制多行贴上。</p>
+            </div>
+            <button id="bulkAdd" type="button">Add Bulk</button>
+          </div>
+          <textarea id="bulkInput" rows="8" spellcheck="false">STATUS	寄出日期	品牌 / 奖品	IG	名字	电话	地址	物流公司	TRACKING NO	Amount
+		Red Chamber（晒单福利）多用膏	xinyue tan	Tan Xin Yue	601110890115	2, Jalan Dayang 50/8, Bandar Mahkota Cheras, 43200 Cheras, Selangor			</textarea>
+          <p id="bulkStatus" class="bulk-status">Paste 后按 Add Bulk。</p>
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div>
+          <strong id="orderCount">0 orders</strong>
+          <span id="warningCount">No warnings</span>
+        </div>
+        <div class="actions">
+          <button id="syncInternal" type="button">Sync Internal Sheet</button>
+          <button id="downloadInternal" type="button">Download Internal CSV</button>
+          <button id="downloadEasyParcel" type="button">Download EasyParcel CSV</button>
+          <button id="clearAll" type="button" class="ghost">Clear</button>
+        </div>
+      </section>
+
+      <section class="sheet-link">
+        <label>
+          Google Sheet Web App URL
+          <input id="sheetWebAppUrl" placeholder="Paste Apps Script Web App URL here" />
+        </label>
+        <p id="syncStatus">贴上你的 Google Sheet Apps Script URL 后，可以把公司内部记录同步进去。</p>
+      </section>
+
+      <section class="preview-grid">
+        <article class="preview-panel">
+          <div class="section-title">
+            <div>
+              <h2>公司内部记录</h2>
+              <p>按照你截图的 Google Sheet 栏位。</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="internalTable"></table>
+          </div>
+        </article>
+
+        <article class="preview-panel">
+          <div class="section-title">
+            <div>
+              <h2>EasyParcel 上传表</h2>
+              <p>格式跟 bulk upload 的 order sheet 对齐。</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="easyparcelTable"></table>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
