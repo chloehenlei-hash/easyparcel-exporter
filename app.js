@@ -13,6 +13,8 @@ const DEFAULTS = {
 
 const STORAGE_KEY = "coforyou.easyparcel.orders.v1";
 const SHEET_URL_KEY = "coforyou.easyparcel.sheetWebAppUrl.v1";
+const DEFAULT_SHEET_WEB_APP_URL =
+  "https://script.google.com/macros/s/AKfycbx_O9Drj7-zuMUgsIKPdxuNjhDeDAy1-XXO2rlkEC7KdN555HxmB2mO6gxklmHbWxo/exec";
 
 const INTERNAL_HEADERS = [
   "STATUS",
@@ -121,7 +123,6 @@ let orders = loadOrders();
 const form = document.querySelector("#entryForm");
 const bulkInput = document.querySelector("#bulkInput");
 const bulkStatus = document.querySelector("#bulkStatus");
-const sheetWebAppUrl = document.querySelector("#sheetWebAppUrl");
 const syncStatus = document.querySelector("#syncStatus");
 const bulkAdd = document.querySelector("#bulkAdd");
 const clearAll = document.querySelector("#clearAll");
@@ -129,11 +130,7 @@ const syncInternal = document.querySelector("#syncInternal");
 const downloadInternal = document.querySelector("#downloadInternal");
 const downloadEasyParcel = document.querySelector("#downloadEasyParcel");
 
-sheetWebAppUrl.value = localStorage.getItem(SHEET_URL_KEY) || "";
-
-sheetWebAppUrl.addEventListener("input", () => {
-  localStorage.setItem(SHEET_URL_KEY, sheetWebAppUrl.value.trim());
-});
+localStorage.setItem(SHEET_URL_KEY, DEFAULT_SHEET_WEB_APP_URL);
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -142,6 +139,7 @@ form.addEventListener("submit", (event) => {
   saveOrders();
   form.reset();
   render();
+  syncInternalSheet([order], { auto: true });
 });
 
 bulkAdd.addEventListener("click", () => {
@@ -154,6 +152,7 @@ bulkAdd.addEventListener("click", () => {
   saveOrders();
   bulkStatus.textContent = `Added ${parsed.length} order${parsed.length > 1 ? "s" : ""}.`;
   render();
+  syncInternalSheet(parsed, { auto: true });
 });
 
 clearAll.addEventListener("click", () => {
@@ -164,7 +163,7 @@ clearAll.addEventListener("click", () => {
 });
 
 syncInternal.addEventListener("click", async () => {
-  await syncInternalSheet();
+  await syncInternalSheet(orders);
 });
 
 downloadInternal.addEventListener("click", () => {
@@ -423,25 +422,25 @@ function render() {
     : "No warnings";
 }
 
-async function syncInternalSheet() {
-  const url = sheetWebAppUrl.value.trim();
+async function syncInternalSheet(targetOrders = orders, options = {}) {
+  const url = DEFAULT_SHEET_WEB_APP_URL || localStorage.getItem(SHEET_URL_KEY) || "";
   if (!url) {
-    syncStatus.textContent = "先贴上 Google Sheet Apps Script Web App URL。";
+    syncStatus.textContent = "Google Sheet 还没有连接。";
     return;
   }
 
-  if (!orders.length) {
+  if (!targetOrders.length) {
     syncStatus.textContent = "现在没有资料可以同步。";
     return;
   }
 
-  syncStatus.textContent = "正在同步公司内部记录...";
+  syncStatus.textContent = options.auto ? "正在自动同步到 Google Sheet..." : "正在同步公司内部记录...";
   localStorage.setItem(SHEET_URL_KEY, url);
 
   const payload = {
     action: "syncInternalRecords",
     headers: INTERNAL_HEADERS,
-    rows: orders.map(toInternalRow),
+    rows: targetOrders.map(toInternalRow),
   };
 
   try {
@@ -454,7 +453,7 @@ async function syncInternalSheet() {
       body: JSON.stringify(payload),
     });
     syncStatus.textContent =
-      "已送出同步请求。Google Sheet 通常几秒内会更新；同一笔资料重复同步会被跳过。";
+      "已同步到 Google Sheet。重复资料会自动跳过。";
   } catch (error) {
     syncStatus.textContent = "同步失败，请检查 Web App URL 或部署权限。";
   }
